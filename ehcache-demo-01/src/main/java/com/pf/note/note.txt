@@ -1,0 +1,18 @@
+一：参考的博客 ：
+1.ehcache：
+	https://www.cnblogs.com/sdream/p/5966668.html
+	https://blog.csdn.net/vbirdbest/article/details/72763048
+
+2.java.io.tmpdir对应路径 '
+	https://blog.csdn.net/am540/article/details/79140078
+	
+二：备注
+1. 案例中是通过配置文件方式配置ehcache。当然也可以通过编程的方式配置
+	如：
+	Cache cache = manager.getCache("mycache"); 
+	CacheConfiguration config = cache.getCacheConfiguration(); 
+	config.setTimeToIdleSeconds(60); 
+	config.setTimeToLiveSeconds(120); 
+	config.setmaxEntriesLocalHeap(10000); 
+	config.setmaxEntriesLocalDisk(1000000);
+

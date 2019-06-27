@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache>
+         
+     <!-- 磁盘存储，将缓存中暂时不使用的对象，转移到磁盘中，类似于windows系统的虚拟内存
+     	  path：指定在磁盘上存储对象的路径
+     	  java.io.tmpdir是获取操作系统缓存的临时目录，不同操作系统的缓存临时目录不一样
+     	  Windows: java.io.tmpdir:[C:\Users\登录用户~1\AppData\Local\Temp\]
+     	  Solaris: java.io.tmpdir:[/var/tmp/]
+     	  Linux: java.io.tmpdir: [/tmp]
+     	  Mac OS X: java.io.tmpdir: [/tmp]
+     	  System.getProperty()可操作参数还有：
+     	  	java.version ：Java运行时环境版本
+			java.vendor：Java运行时环境供应商
+			java.vendor.url：Java供应商的 URL
+			java.home：Java安装目录
+			java.vm.specification.version：Java虚拟机规范版本
+			java.vm.specification.vendor：Java虚拟机规范供应商
+			java.vm.specification.name：Java虚拟机规范名称
+			java.vm.version：Java虚拟机实现版本
+			java.vm.vendor：Java虚拟机实现供应商
+			java.vm.name：Java虚拟机实现名称
+			java.specification.version：Java运行时环境规范版本
+			java.specification.vendor：Java运行时环境规范供应商
+			java.specification.name：Java运行时环境规范名称
+			java.class.version：Java类格式版本号
+			java.class.path：Java类路径
+			java.library.path：加载库时搜索的路径列表
+			java.io.tmpdir：默认的临时文件路径
+			java.compiler：要使用的 JIT 编译器的名称
+			java.ext.dirs：一个或多个扩展目录的路径	
+			os.name：操作系统的名称
+			os.arch：操作系统的架构
+			os.version：操作系统的版本
+			file.separator：文件分隔符（在 UNIX 系统中是“/”）
+			path.separator：路径分隔符（在 UNIX 系统中是“:”）
+			line.separator：行分隔符（在 UNIX 系统中是“/n”）
+			user.name：用户的账户名称
+			user.home：用户的主目录
+			user.dir：用户的当前工作目录
+      -->    
+     <diskStore path="java.io.tmpdir/ehcache"/>    
+         
+     <!-- 
+     	ehcache默认的缓存策略，如果不加特殊说明，则所有对象按照此配置项处理。
+     	defaultCache默认策略：
+     	一：以下属性是必须的：
+     	   1.name：cache的名称，必须是唯一的（ehcache会把这个cache放到hashMap里）
+     	   2.maxElementsInMemory：在内存中缓存的element的最大数目。
+     	   3.maxElementsOnDisk：在磁盘上缓存的element的最大数目。默认值为0，表示不限制
+     	   4.eternal：设定缓存的elements是否永远不过期。如果为true，则缓存的数据始终有效，如果为false那么还要很据timeToIdleSeconds，timeToLiveSeconds判断。
+     	   5.overflowToDis：如果缓存内存中的数据超过内存限制，是否要缓存到磁盘上。
+     	二：以下属性是可选的：
+     	   1.timeToIdleSeconds：对象空闲时间，指对象在多长时间没有被访问就会失效。只对eternal为false时有效。默认值为0，表示一直可以访问。
+     	   2.timeToLiveSeconds：对象存活时间，指对象从创建到失效所需要的时间。只对eternal为false时有效。默认值0，表示一直可以访问。
+     	   3.diskPersistent：是否在磁盘上持久化。指重启jvm后，数据是否有效。默认为false。
+     	   4.diskExpiryThreadIntervalSeconds：对象检测线程运行时间间隔。标识对象状态的线程多长时间运行一次。
+     	   5.diskSpoolBufferSizeMB： DiskStore使用的磁盘大小，默认值30MB。每个cache使用各自的DiskStore。
+     	   6.memoryStoreEvictionPolicy：如果内存中数据超过内存限制，向磁盘缓存时的策略。默认值LRU，可选FIFO、LFU
+     	三：缓存的3 种清空策略 ：
+　　		   1.FIFO：first in first out (先进先出).
+　　                    2.LFU： Less Frequently Used (最少使用).意思是一直以来最少被使用的。缓存的元素有一个hit 属性，hit 值最小的将会被清出缓存。
+　　                    3. LRU：Least Recently Used(最近最少使用). (ehcache 默认值).缓存的元素有一个时间戳，当缓存容量满了，而又需要腾出地方来缓存新的元素的时候，那么现有缓存元素中时间戳离当前时间最远的元素将被清出缓存。      
+     	
+      -->    
+     <defaultCache 
+     	maxEntriesLocalHeap="10000"
+     	eternal="false"
+     	timeToIdleSeconds="120"
+     	timeToLiveSeconds="120"
+     	maxEntriesLocalDisk="10000000"
+     	diskExpiryThreadIntervalSeconds="120"
+     	memoryStoreEvictionPolicy="LRU">
+     		<persistence strategy="localTempSwap"/>
+     </defaultCache>  
+     
+     <!-- 自定义ehcache缓存策略 -->
+     <!-- <cache name="myCache"
+     	maxElementsInMemory="2" 
+     	eternal="false" 
+     	timeToIdleSeconds="5"
+     	timeToLiveSeconds="5" 
+     	overflowToDisk="false"
+     	memoryStoreEvictionPolicy="LRU">
+     </cache> -->
+     
+     <!-- 自定义ehcache缓存策略
+     	假如系统突然中断运行 那内存中的那些缓存，直接被释放掉了，不能持久化到硬盘。
+     	maxElementsInMemory设置成1，overflowToDisk设置成true，只要有一个缓存元素，就直接存到硬盘上去
+        eternal设置成true，代表对象永久有效
+        maxElementsOnDisk设置成0 表示硬盘中最大缓存对象数无限大
+        diskPersistent设置成true表示缓存虚拟机重启期数据 
+      -->
+     <cache 
+	      name="myCache"
+	      maxElementsInMemory="100" 
+	      eternal="true"
+	      overflowToDisk="true" 
+	      maxElementsOnDisk="0"
+	      diskPersistent="true"/>
+       
+</ehcache>         
